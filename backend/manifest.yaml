@@ -35,6 +35,13 @@ spec:
         envFrom:
         - configMapRef:
             name: backend
+      resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
 ---
 kind: Service
 apiVersion: v1
@@ -51,3 +58,18 @@ spec:
     protocol: TCP
     port: 8080 # service port
     targetPort: 8080 # container port
+---
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-hpa
+  namespace: expense
+spec:
+  maxReplicas: 10
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    name: backend
+  targetCPUUtilizationPercentage: 15
